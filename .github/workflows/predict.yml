@@ -1,0 +1,43 @@
+name: weekly-prediction
+
+# Runs when a new PIHPS file is added to data/raw/, or manually from the Actions tab.
+on:
+  push:
+    branches: [main]
+    paths: ["data/raw/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write          # needed to commit the updated log
+
+concurrency:
+  group: prediction-log    # never run two jobs that append to the log at once
+  cancel-in-progress: false
+
+jobs:
+  predict:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Append new predictions to the log
+        run: python src/prediksi.py
+
+      - name: Commit the log if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add predictions/log.csv
+          if git diff --cached --quiet; then
+            echo "No new rows."
+          else
+            git commit -m "Append predictions (automated)"
+            git push
+          fi

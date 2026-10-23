@@ -38,6 +38,7 @@ def buat_prediksi(mingguan, f, H):
 
 def tambah_ke_log(baris, path):
     baru = pd.DataFrame(baris, columns=KOLOM_LOG)
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)   # buat folder log kalau belum ada
     ada = os.path.exists(path)
     if ada:                                         # lewati baris yang sudah tercatat
         lama = pd.read_csv(path)
