@@ -53,7 +53,7 @@ Systems logged side by side for every reference week and horizon:
 | `aturan_ubah4` | Simple rule: price change over the last 4 weeks |
 | `baseline_persisten` | Persistence (score 0) |
 
-Log columns: `tanggal_prediksi`, `minggu_acuan`, `H`, `minggu_target`, `sistem`, `skor`, `harga_acuan`. Writing is idempotent: re-running never duplicates a row. The first rows are dated 2026-10-23 (reference week ending 2026-10-18; targets 2026-11-15 and 2026-12-13). Scoring code and results will be added once enough target weeks have passed; an honest verdict needs months, not weeks.
+Log columns: `tanggal_prediksi`, `minggu_acuan`, `H`, `minggu_target`, `sistem`, `skor`, `harga_acuan`. Writing is idempotent: re-running never duplicates a row. The first rows are dated 2026-10-23 (reference week ending 2026-10-18; targets 2026-11-15 and 2026-12-13). Scoring is done by `src/evaluasi.py`, under a protocol locked on 2026-10-23, before any prediction matured: a spike is a rise of more than 25% over the horizon, and lift is shown only after at least 26 matured weeks and 5 spike weeks (otherwise it prints "belum cukup data"). An honest verdict needs months, not weeks.
 
 The same predictions were produced on two different machines (my sandbox and the GitHub runner) and matched to four decimals, which is a basic reproducibility check.
 
@@ -63,6 +63,7 @@ The same predictions were produced on two different machines (my sandbox and the
 src/bersihkan.py   read a PIHPS xlsx and return one commodity's daily price series
 src/fitur.py       weekly aggregation and features (lags, changes, 52-week mean, holiday weeks)
 src/prediksi.py    train, score the latest complete week, append to the log
+src/evaluasi.py    join matured log rows with realized prices; lift with block-bootstrap intervals
 data/raw/          PIHPS exports (full history, filenames end with the last date)
 predictions/       append-only prediction log
 requirements.txt   pinned versions
