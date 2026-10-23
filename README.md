@@ -64,6 +64,7 @@ src/bersihkan.py   read a PIHPS xlsx and return one commodity's daily price seri
 src/fitur.py       weekly aggregation and features (lags, changes, 52-week mean, holiday weeks)
 src/prediksi.py    train, score the latest complete week, append to the log
 src/evaluasi.py    join matured log rows with realized prices; lift with block-bootstrap intervals
+notebooks/         03_model.ipynb: the backtest experiments behind the results above (outputs saved)
 data/raw/          PIHPS exports (full history, filenames end with the last date)
 predictions/       append-only prediction log
 requirements.txt   pinned versions
@@ -85,7 +86,7 @@ python src/prediksi.py
 - **Holiday dates.** Some Idul Fitri and Idul Adha dates in `src/fitur.py` are not yet verified against an official source.
 - **Weekday-only data**, so a week counts as complete once data reaches Friday.
 - **Data rights.** PIHPS has no documented terms or API that I could find. The raw export is stored in this repository only so the workflow can read it, and the repository is currently private.
-- **Experiments not yet included.** The exploratory notebooks are not in this repo yet.
+- **Notebook scope.** `notebooks/03_model.ipynb` holds the experiments. The early learning notebooks (data cleaning, baselines) are not included; their logic lives in `src/`. Re-running the notebook from the repository data reproduces the saved text outputs exactly.
 
 ## Ringkasan (Bahasa Indonesia)
 
