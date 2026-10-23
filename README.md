@@ -57,6 +57,10 @@ Log columns: `tanggal_prediksi`, `minggu_acuan`, `H`, `minggu_target`, `sistem`,
 
 The same predictions were produced on two different machines (my sandbox and the GitHub runner) and matched to four decimals, which is a basic reproducibility check.
 
+## Data source
+
+PIHPS Nasional, Bank Indonesia ([bi.go.id/hargapangan](https://www.bi.go.id/hargapangan)). Exported by me with the site's Excel export. This project is independent and not affiliated with or endorsed by Bank Indonesia.
+
 ## Repository layout
 
 ```
@@ -85,7 +89,7 @@ python src/prediksi.py
 - **Multiple comparisons.** Several variants were tried on the same backtest.
 - **Holiday dates.** Some Idul Fitri and Idul Adha dates in `src/fitur.py` are not yet verified against an official source.
 - **Weekday-only data**, so a week counts as complete once data reaches Friday.
-- **Data rights.** PIHPS has no documented terms or API that I could find. The raw export is stored in this repository only so the workflow can read it, and the repository is currently private.
+- **Data rights.** I asked Bank Indonesia's contact center about reuse. Their reply (Oct 2026) said data published on the Bank Indonesia website is official public information that may be used for one's own purposes, and asked that the official Bank Indonesia source be cited. That is a customer-service answer, not a formal licence, and it did not address redistributing the raw file specifically; the PIHPS footer still says all rights are reserved. The raw export is kept here so the workflow can read it, and I will remove it if asked.
 - **Notebook scope.** `notebooks/03_model.ipynb` holds the experiments. The early learning notebooks (data cleaning, baselines) are not included; their logic lives in `src/`. Re-running the notebook from the repository data reproduces the saved text outputs exactly.
 
 ## Ringkasan (Bahasa Indonesia)
