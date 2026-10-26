@@ -1,4 +1,5 @@
 """Membaca file PIHPS (xlsx) dan menghasilkan deret harga harian satu komoditas."""
+import os
 import pandas as pd
 
 
@@ -17,3 +18,29 @@ def baca_pihps(path_xlsx, komoditas="Cabai Merah Keriting"):
     assert harga.index.is_unique, "Ada tanggal ganda"
     harga.name = "cabai_merah_keriting"
     return harga
+
+
+def baca_banyak(paths, komoditas="Cabai Merah Keriting", celah_maks_hari=5):
+    """Gabungkan beberapa file PIHPS (misalnya riwayat lama + pekan terbaru) menjadi satu deret harian.
+
+    - File diurutkan menurut tanggal akhir di nama file (pihps_depok_<awal>_<akhir>.xlsx).
+    - Untuk tanggal yang ada di lebih dari satu file, nilai dari file lebih baru yang dipakai,
+      kecuali nilainya kosong (maka dipakai nilai dari file lebih lama).
+    - Berhenti dengan pesan jelas bila ada celah lebih dari `celah_maks_hari` hari antar tanggal
+      (tanda ada pekan yang belum diunduh).
+    """
+    if isinstance(paths, (str, os.PathLike)):
+        paths = [paths]
+    paths = sorted(paths, key=lambda p: os.path.basename(str(p))[-15:-5])    # tanggal akhir, format YYYY-MM-DD
+    assert paths, "Tidak ada file PIHPS di data/raw/"
+    gabungan = None
+    for p in paths:
+        seri = baca_pihps(p, komoditas)
+        gabungan = seri if gabungan is None else seri.combine_first(gabungan)
+    gabungan = gabungan.sort_index()
+    celah = gabungan.index.to_series().diff().dropna()
+    assert celah.max() <= pd.Timedelta(days=celah_maks_hari), (
+        f"Ada celah {celah.max().days} hari sebelum {celah.idxmax().date()}: "
+        "kemungkinan ada pekan yang belum diunduh ke data/raw/")
+    gabungan.name = "cabai_merah_keriting"
+    return gabungan

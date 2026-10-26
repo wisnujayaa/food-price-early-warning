@@ -69,7 +69,8 @@ src/fitur.py       weekly aggregation and features (lags, changes, 52-week mean,
 src/prediksi.py    train, score the latest complete week, append to the log
 src/evaluasi.py    join matured log rows with realized prices; lift with block-bootstrap intervals
 notebooks/         03_model.ipynb: the backtest experiments behind the results above (outputs saved)
-data/raw/          PIHPS exports (full history, filenames end with the last date)
+data/raw/          PIHPS exports: one full-history file plus one file per later period
+                   (named pihps_depok_<start>_<end>.xlsx); src/bersihkan.py merges them, newest wins
 predictions/       append-only prediction log
 requirements.txt   pinned versions
 ```

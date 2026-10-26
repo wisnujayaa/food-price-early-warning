@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score
 
-from bersihkan import baca_pihps
+from bersihkan import baca_banyak
 from fitur import mingguan_lengkap
 
 # ---------------------------------------------------------------------------
@@ -71,7 +71,7 @@ def nilai(matang):
 
 
 def main(path_xlsx, path_log):
-    mingguan = mingguan_lengkap(baca_pihps(path_xlsx))
+    mingguan = mingguan_lengkap(baca_banyak(path_xlsx))
     log = pd.read_csv(path_log)
     matang = tempel_kenyataan(log, mingguan)
     print(f"{len(log)} baris di log; {len(matang)} sudah matang.")
@@ -84,5 +84,5 @@ def main(path_xlsx, path_log):
 
 
 if __name__ == "__main__":
-    xlsx = sorted(glob.glob("data/raw/*.xlsx"))[-1]
+    xlsx = sorted(glob.glob("data/raw/*.xlsx"))
     main(xlsx, "predictions/log.csv")

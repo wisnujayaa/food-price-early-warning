@@ -7,7 +7,7 @@ from datetime import date
 import lightgbm as lgb
 import pandas as pd
 
-from bersihkan import baca_pihps
+from bersihkan import baca_banyak
 from fitur import bangun_fitur, mingguan_lengkap
 
 HORIZON = [4, 8]
@@ -51,7 +51,7 @@ def tambah_ke_log(baris, path):
 
 
 def main(path_xlsx, path_log, hari_ini=None):
-    harga = baca_pihps(path_xlsx)
+    harga = baca_banyak(path_xlsx)           # path_xlsx boleh satu file atau daftar file
     mingguan = mingguan_lengkap(harga)
     f = bangun_fitur(mingguan)
     acuan = f.index[-1]
@@ -66,5 +66,5 @@ def main(path_xlsx, path_log, hari_ini=None):
 
 
 if __name__ == "__main__":
-    xlsx = sorted(glob.glob("data/raw/*.xlsx"))[-1]          # file mentah terbaru
+    xlsx = sorted(glob.glob("data/raw/*.xlsx"))              # semua file mentah, digabung
     main(xlsx, "predictions/log.csv")
