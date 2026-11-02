@@ -1,0 +1,9 @@
+waktu,commit,H,periode,minggu,lonjakan,sistem,lift,lift_5%,lift_95%,vs_aturan_ubah4_5%,vs_aturan_ubah4_95%,catatan
+2026-11-02T21:35:17,316b2bd+belum_commit,4,dev,209,40,lgbm_semua,1.6886,1.2072,2.8253,-0.61,1.5899,"Modul 0: papan skor awal, sistem yang sudah ada"
+2026-11-02T21:35:17,316b2bd+belum_commit,4,dev,209,40,lgbm_tanpa_kalender,2.0527,1.4751,3.1096,-0.2425,1.655,"Modul 0: papan skor awal, sistem yang sudah ada"
+2026-11-02T21:35:17,316b2bd+belum_commit,4,dev,209,40,aturan_ubah4,1.4853,1.0405,2.1541,,,"Modul 0: papan skor awal, sistem yang sudah ada"
+2026-11-02T21:35:17,316b2bd+belum_commit,4,dev,209,40,baseline_persisten,1.0,1.0,1.0,-1.1541,-0.0405,"Modul 0: papan skor awal, sistem yang sudah ada"
+2026-11-02T21:35:17,316b2bd+belum_commit,8,dev,209,54,lgbm_semua,1.2842,0.9848,1.9911,-0.0663,1.1452,"Modul 0: papan skor awal, sistem yang sudah ada"
+2026-11-02T21:35:17,316b2bd+belum_commit,8,dev,209,54,lgbm_tanpa_kalender,1.7813,1.2836,2.7327,0.307,1.8098,"Modul 0: papan skor awal, sistem yang sudah ada"
+2026-11-02T21:35:17,316b2bd+belum_commit,8,dev,209,54,aturan_ubah4,0.8608,0.7821,1.1562,,,"Modul 0: papan skor awal, sistem yang sudah ada"
+2026-11-02T21:35:17,316b2bd+belum_commit,8,dev,209,54,baseline_persisten,1.0,1.0,1.0,-0.1562,0.2179,"Modul 0: papan skor awal, sistem yang sudah ada"
