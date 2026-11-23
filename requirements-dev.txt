@@ -1,0 +1,3 @@
+# Only for the backtest (src/backtest.py) and tests. The weekly robot does not need these.
+statsmodels==0.15.0
+pytest==9.1.1

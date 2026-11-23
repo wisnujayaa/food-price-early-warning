@@ -1,14 +1,20 @@
 name: weekly-prediction
 
-# Runs when a new PIHPS file is added to data/raw/, or manually from the Actions tab.
+# Runs:
+#  - every Saturday 08:17 WIB (01:17 UTC): download the latest PIHPS data, then predict
+#    (Saturday, so the week's data up to Friday is final and the week counts as complete)
+#  - when a PIHPS file is added to data/raw/ by hand
+#  - manually from the Actions tab
 on:
+  schedule:
+    - cron: "17 1 * * 6"
   push:
     branches: [main]
     paths: ["data/raw/**"]
   workflow_dispatch:
 
 permissions:
-  contents: write          # needed to commit the updated log
+  contents: write          # needed to commit new data and the updated log
 
 concurrency:
   group: prediction-log    # never run two jobs that append to the log at once
@@ -27,17 +33,22 @@ jobs:
 
       - run: pip install -r requirements.txt
 
+      # Fails loudly (GitHub emails the repo owner) if PIHPS is down, changed its format,
+      # or returned implausible prices. Better a red run than a log built on bad data.
+      - name: Download the latest PIHPS data
+        run: python src/unduh.py
+
       - name: Append new predictions to the log
         run: python src/prediksi.py
 
-      - name: Commit the log if it changed
+      - name: Commit new data and log if they changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add predictions/log.csv
+          git add data/raw predictions/log.csv
           if git diff --cached --quiet; then
-            echo "No new rows."
+            echo "Nothing new."
           else
-            git commit -m "Append predictions (automated)"
+            git commit -m "Weekly update: PIHPS data and predictions (automated)"
             git push
           fi

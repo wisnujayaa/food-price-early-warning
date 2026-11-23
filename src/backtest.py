@@ -13,6 +13,8 @@ import os
 import subprocess
 from datetime import datetime
 
+import warnings
+
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
@@ -37,12 +39,14 @@ PATH_EKSPERIMEN = "experiments.csv"
 
 
 # ---------------------------------------------------------------------------
-# SISTEM. Satu sistem = fungsi(latih, uji, H) -> skor untuk setiap baris uji.
+# SISTEM. Satu sistem = fungsi(latih, uji, H, mingguan) -> skor untuk setiap baris uji.
+# `mingguan` = deret harga mingguan; sistem hanya boleh memakai harga sampai minggu yang dinilai
+# (diuji otomatis di tests/test_backtest.py).
 # Skor makin besar = makin berisiko melonjak. Untuk menambah ide baru, tulis fungsi
 # baru dan daftarkan di SISTEM. Jangan ubah sistem lama: buat nama baru.
 # ---------------------------------------------------------------------------
 def _lgbm(buang=()):
-    def skor(latih, uji, H):
+    def skor(latih, uji, H, mingguan=None):
         fitur = [c for c in uji.columns if c not in ("target", *buang)]
         model = lgb.LGBMRegressor(random_state=0, verbose=-1)
         model.fit(latih[fitur], latih.target / latih.sekarang - 1)
@@ -50,11 +54,49 @@ def _lgbm(buang=()):
     return skor
 
 
+def musiman_naif(latih, uji, H, mingguan):
+    """Modul 1. Tebakan: harga H minggu lagi = harga di minggu yang sama tahun lalu.
+    Skor = perubahan yang ditebak dari harga sekarang. Minggu t+H-52 selalu sebelum t
+    (karena H < 52), jadi harganya sudah diketahui saat menebak."""
+    lalu = mingguan.shift(52 - H).reindex(uji.index)
+    return (lalu / uji.sekarang - 1).to_numpy()
+
+
+def musiman_rasio(latih, uji, H, mingguan, tahun=3):
+    """Modul 1. Tebakan: perubahan harga dari sekarang ke H minggu lagi = rata-rata perubahan
+    pada periode yang sama di `tahun` tahun sebelumnya. Memakai perubahan (bukan harga), jadi
+    tidak terganggu kalau harga tahun lalu secara umum lebih mahal atau lebih murah."""
+    ubah = mingguan.shift(-H) / mingguan - 1          # perubahan t -> t+H, baru diketahui di t+H
+    lalu = pd.concat([ubah.shift(52 * k) for k in range(1, tahun + 1)], axis=1)
+    return lalu.mean(axis=1).reindex(uji.index).to_numpy()
+
+
+def ets_musiman(latih, uji, H, mingguan):
+    """Modul 1. ETS (exponential smoothing) dengan pola musiman 52 minggu, pada log harga.
+    Untuk setiap minggu uji t, model dilatih ulang HANYA dengan harga sampai t, lalu
+    meramal H minggu ke depan. Skor = perubahan yang diramal dari harga sekarang."""
+    from statsmodels.tsa.holtwinters import ExponentialSmoothing   # hanya untuk backtest
+    log_harga = np.log(mingguan)
+    skor = []
+    for t in uji.index:
+        y = log_harga.loc[:t].to_numpy()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")                         # peringatan konvergensi
+            fit = ExponentialSmoothing(y, trend=None, seasonal="add", seasonal_periods=52,
+                                       initialization_method="heuristic").fit()
+        skor.append(float(np.exp(fit.forecast(H)[-1] - y[-1]) - 1))
+    return np.array(skor)
+
+
 SISTEM = {
     "lgbm_semua":          _lgbm(),
     "lgbm_tanpa_kalender": _lgbm(buang=("minggu_fitri", "minggu_adha")),
-    "aturan_ubah4":        lambda latih, uji, H: uji.ubah4.to_numpy(),
-    "baseline_persisten":  lambda latih, uji, H: np.zeros(len(uji)),
+    "aturan_ubah4":        lambda latih, uji, H, mingguan=None: uji.ubah4.to_numpy(),
+    "baseline_persisten":  lambda latih, uji, H, mingguan=None: np.zeros(len(uji)),
+    # Modul 1: baseline statistik yang kuat (ditambahkan 2026-11-23)
+    "musiman_naif":        musiman_naif,
+    "musiman_rasio":       musiman_rasio,
+    "ets_musiman":         ets_musiman,
 }
 
 
@@ -75,7 +117,7 @@ def jalankan(mingguan, H, nama_sistem, periode="dev"):
         uji = g[(g.index >= awal) & (g.index < akhir)].copy()
         latih = g[g.index + pd.Timedelta(weeks=H) < awal]       # target latih jatuh sebelum uji
         # setiap sistem melihat salinan bersih: skor sistem lain tidak boleh jadi fitur
-        skor = {nama: SISTEM[nama](latih, uji.copy(), H) for nama in nama_sistem}
+        skor = {nama: SISTEM[nama](latih, uji.copy(), H, mingguan) for nama in nama_sistem}
         potongan.append(uji.assign(**skor))
     hasil = pd.concat(potongan)
     hasil["lonjakan"] = hasil.target / hasil.sekarang - 1 > AMBANG_LONJAKAN
